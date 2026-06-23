@@ -631,6 +631,68 @@ select:hover { border-color: var(--primary); }
 .toggle-switch input:checked + .toggle-track::after { left: 21px; }
 
 /* ════════════════════════════════════════════
+   FAVORITES / LIBRARY PAGE
+════════════════════════════════════════════ */
+.fav-page-topbar {
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    padding: 1.25rem 1.5rem 0;
+    position: sticky; top: 0; z-index: 50;
+}
+.fav-page-heading {
+    display: flex; align-items: center; gap: 0.6rem;
+    font-size: 1.35rem; font-weight: 700; color: var(--text);
+    margin: 0 0 1rem;
+    animation: fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) both;
+}
+.fav-tabs {
+    display: flex; gap: 4px; flex-wrap: wrap;
+}
+.fav-tab-btn {
+    background: none; border: none; border-bottom: 3px solid transparent;
+    color: var(--text-muted); font-size: 13px; font-weight: 600;
+    padding: 0.5rem 1rem 0.6rem; cursor: pointer; transition: var(--tr);
+    margin-bottom: -1px; white-space: nowrap;
+}
+.fav-tab-btn:hover { color: var(--text); }
+.fav-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+.fav-page-body { padding: 1.5rem; }
+.fav-tab-section { display: none; }
+.fav-tab-section.active { display: block; animation: pageEnter 0.25s cubic-bezier(0.22,1,0.36,1) both; }
+
+/* Card time label (history) */
+.card-time-label {
+    font-size: 10px; color: var(--text-dim); text-align: center;
+    padding: 0 0.5rem 0.5rem; line-height: 1;
+}
+
+/* ── Favorite button on cards ── */
+.fav-btn {
+    position: absolute; top: 7px; left: 7px;
+    background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 50%; width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: rgba(255,255,255,0.8);
+    transition: var(--tr); z-index: 4;
+    opacity: 0; pointer-events: none;
+    padding: 0;
+}
+.game-card:hover .fav-btn,
+.movie-card:hover .fav-btn { opacity: 1; pointer-events: auto; }
+.fav-btn:hover { background: rgba(239,68,68,0.7); border-color: transparent; color: white; transform: scale(1.12); }
+.fav-btn.faved { opacity: 1; pointer-events: auto; background: rgba(239,68,68,0.85); border-color: transparent; color: white; }
+.fav-btn.faved:hover { background: rgba(220,38,38,0.9); }
+
+/* Movie card fav button adjustments (poster is taller) */
+.movie-card-fav-btn { top: 7px; left: 7px; }
+
+/* Viewer fav button */
+.fav-ctrl-btn { transition: var(--tr); }
+.fav-ctrl-btn.faved { background: rgba(239,68,68,0.55); border-color: rgba(239,68,68,0.8); }
+.fav-ctrl-btn.faved:hover { background: rgba(239,68,68,0.8); }
+
+/* ════════════════════════════════════════════
    RESPONSIVE
 ════════════════════════════════════════════ */
 @media (max-width: 640px) {

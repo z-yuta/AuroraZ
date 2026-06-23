@@ -94,7 +94,11 @@ async function fetchGnmath() {
 
 async function fetchTruffled() {
     try {
-        const res = await fetch('/api/truffled-games');
+        const cfg = window.AURORA_CONFIG || {};
+        const url = cfg.staticMode
+            ? 'https://truffled.lol/js/json/g.json'
+            : '/api/truffled-games';
+        const res = await fetch(url);
         if (!res.ok) return [];
         const data = await res.json();
         return (data.games || []).map((g, i) => ({
@@ -114,7 +118,11 @@ async function fetchTruffled() {
 
 async function fetchWasm() {
     try {
-        const res = await fetch('/api/wasm-games');
+        const cfg = window.AURORA_CONFIG || {};
+        const url = cfg.staticMode
+            ? 'https://wasm.rip/games.json'
+            : '/api/wasm-games';
+        const res = await fetch(url);
         if (!res.ok) return [];
         const data = await res.json();
         return (data || []).map(g => ({
@@ -140,15 +148,33 @@ function ugsDisplayName(filename) {
 
 async function fetchUGS() {
     try {
-        const res = await fetch('/api/ugs-games');
-        if (!res.ok) return [];
-        const files = await res.json();
+        const cfg = window.AURORA_CONFIG || {};
+        const listUrl = cfg.staticMode
+            ? 'https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/games.js'
+            : '/api/ugs-games';
+
+        let files;
+        if (cfg.staticMode) {
+            const res = await fetch(listUrl);
+            if (!res.ok) return [];
+            const text = await res.text();
+            const match = text.match(/let files\s*=\s*(\[[\s\S]*?\]);/);
+            if (!match) return [];
+            files = JSON.parse(match[1]);
+        } else {
+            const res = await fetch(listUrl);
+            if (!res.ok) return [];
+            files = await res.json();
+        }
+
         return (files || []).map((f, i) => ({
             id:       'ugs_' + i,
             rawId:    null,
             name:     ugsDisplayName(f),
             cover:    '',
-            url:      '/api/ugs-proxy?file=' + encodeURIComponent(f),
+            url:      cfg.staticMode
+                ? `https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile/UGS-Files/${encodeURIComponent(f.includes('.') ? f : f + '.html')}`
+                : '/api/ugs-proxy?file=' + encodeURIComponent(f),
             author:   'UGS',
             featured: false,
             special:  [],

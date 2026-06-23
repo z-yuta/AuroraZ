@@ -292,6 +292,15 @@ function createCard(game, featured = false) {
     pip.title = SOURCE_LABELS[game.source] || game.source;
     thumbWrap.appendChild(pip);
 
+    if (typeof makeFavBtn === 'function') {
+        const heart = makeFavBtn(game.id, typeof isGameFav === 'function' && isGameFav(game.id), (e) => {
+            e.stopPropagation();
+            if (typeof toggleGameFav === 'function') toggleGameFav(game, e);
+        });
+        heart.className += ' card-fav-btn';
+        thumbWrap.appendChild(heart);
+    }
+
     const name = document.createElement('div');
     name.className = 'game-card-name';
     name.textContent = game.name;
@@ -358,6 +367,14 @@ async function openGame(game) {
     if (game.openType === 'external') { window.open(game.url, '_blank'); currentGame = null; return; }
 
     gameViewer.classList.remove('hidden');
+
+    if (typeof addGameHistory === 'function') addGameHistory(game);
+    const viewerFavBtn = document.getElementById('viewerFavBtn');
+    if (viewerFavBtn && typeof isGameFav === 'function') {
+        const faved = isGameFav(game.id);
+        viewerFavBtn.classList.toggle('faved', faved);
+        viewerFavBtn.textContent = faved ? '♥ Favorited' : '♥ Favorite';
+    }
 
     if (game.openType === 'iframe') {
         const fullUrl = game.url.startsWith('http') ? game.url : TRUFFLED + game.url;

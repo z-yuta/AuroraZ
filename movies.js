@@ -176,6 +176,16 @@ function createMovieCard(item) {
         wrap.appendChild(badge);
     }
 
+    if (typeof makeFavBtn === 'function') {
+        const heart = makeFavBtn('m' + item.id, typeof isMovieFav === 'function' && isMovieFav(item.id), (e) => {
+            e.stopPropagation();
+            const enriched = Object.assign({}, item, { media_type: isTV ? 'tv' : (item.media_type || 'movie') });
+            if (typeof toggleMovieFav === 'function') toggleMovieFav(enriched, e);
+        });
+        heart.className += ' card-fav-btn movie-card-fav-btn';
+        wrap.appendChild(heart);
+    }
+
     const info = document.createElement('div');
     info.className = 'movie-info';
     info.innerHTML = `<div class="movie-title">${title}</div>${year ? `<div class="movie-year">${year}</div>` : ''}`;
@@ -194,6 +204,15 @@ function openMovie(item) {
     document.getElementById('tvEpisodeControls').style.display = 'none';
     document.getElementById('movieFrame').src = `${VIDLINK}/movie/${item.id}`;
     document.getElementById('movieViewer').classList.remove('hidden');
+
+    window._currentMovieItem = Object.assign({}, item, { media_type: item.media_type || 'movie' });
+    if (typeof addMovieHistory === 'function') addMovieHistory(item, false);
+    const favBtn = document.getElementById('movieViewerFavBtn');
+    if (favBtn && typeof isMovieFav === 'function') {
+        const faved = isMovieFav(item.id);
+        favBtn.classList.toggle('faved', faved);
+        favBtn.textContent = faved ? '♥ Favorited' : '♥ Favorite';
+    }
 }
 
 // ── Open TV show ───────────────────────────────────────────────────────────────
@@ -203,6 +222,15 @@ async function openTV(item) {
     document.getElementById('movieViewerMeta').textContent  = 'Loading seasons…';
     document.getElementById('tvEpisodeControls').style.display = 'flex';
     document.getElementById('movieViewer').classList.remove('hidden');
+
+    window._currentMovieItem = Object.assign({}, item, { media_type: 'tv' });
+    if (typeof addMovieHistory === 'function') addMovieHistory(item, true);
+    const favBtn = document.getElementById('movieViewerFavBtn');
+    if (favBtn && typeof isMovieFav === 'function') {
+        const faved = isMovieFav(item.id);
+        favBtn.classList.toggle('faved', faved);
+        favBtn.textContent = faved ? '♥ Favorited' : '♥ Favorite';
+    }
 
     try {
         const res  = await fetch(tvDetailUrl(item.id));

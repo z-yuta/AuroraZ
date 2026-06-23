@@ -28,6 +28,10 @@
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
             <span class="nav-label">Movies</span>
         </button>
+        <button class="nav-btn" data-page="favorites" onclick="navigate('favorites')">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <span class="nav-label">Library</span>
+        </button>
     </div>
     <div class="sidebar-footer">
         <button class="nav-btn" data-page="settings" onclick="navigate('settings')">
@@ -62,6 +66,22 @@
         </div>
 
         <div class="home-sections">
+            <section class="home-section" id="homeRecentGamesSection" style="display:none">
+                <div class="home-section-header">
+                    <h2>▶ Continue Playing</h2>
+                    <button class="see-all-btn" onclick="navigate('favorites')">See all →</button>
+                </div>
+                <div id="homeRecentGames" class="home-row"></div>
+            </section>
+
+            <section class="home-section" id="homeRecentMoviesSection" style="display:none">
+                <div class="home-section-header">
+                    <h2>⏱ Recently Watched</h2>
+                    <button class="see-all-btn" onclick="navigate('favorites')">See all →</button>
+                </div>
+                <div id="homeRecentMovies" class="home-row"></div>
+            </section>
+
             <section class="home-section">
                 <div class="home-section-header">
                     <h2>🔥 Featured Games</h2>
@@ -190,6 +210,44 @@
             </div>
             <div class="load-more-wrap">
                 <button id="loadMoreBtn" class="load-more-btn hidden" onclick="loadMoreMedia()">Load More</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAVORITES / LIBRARY -->
+    <div class="page" id="page-favorites">
+        <div class="fav-page-topbar">
+            <h1 class="fav-page-heading">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                Library
+            </h1>
+            <div class="fav-tabs">
+                <button class="fav-tab-btn active" data-tab="hist-games"  onclick="switchFavTab('hist-games')">▶ Recent Games</button>
+                <button class="fav-tab-btn"         data-tab="hist-movies" onclick="switchFavTab('hist-movies')">⏱ Recent Movies</button>
+                <button class="fav-tab-btn"         data-tab="fav-games"   onclick="switchFavTab('fav-games')">♥ Fav Games</button>
+                <button class="fav-tab-btn"         data-tab="fav-movies"  onclick="switchFavTab('fav-movies')">♥ Fav Movies</button>
+            </div>
+        </div>
+        <div class="fav-page-body">
+            <div class="fav-tab-section active" id="favTab-hist-games">
+                <div id="histGameGrid" class="game-grid">
+                    <div class="empty-state">No recently played games.</div>
+                </div>
+            </div>
+            <div class="fav-tab-section" id="favTab-hist-movies">
+                <div id="histMovieGrid" class="movie-grid">
+                    <div class="empty-state">No recently watched movies or shows.</div>
+                </div>
+            </div>
+            <div class="fav-tab-section" id="favTab-fav-games">
+                <div id="favGameGrid" class="game-grid">
+                    <div class="empty-state">No favorite games yet.<br><span style="opacity:.6">Click ♥ on any game to save it here.</span></div>
+                </div>
+            </div>
+            <div class="fav-tab-section" id="favTab-fav-movies">
+                <div id="favMovieGrid" class="movie-grid">
+                    <div class="empty-state">No favorite movies yet.<br><span style="opacity:.6">Click ♥ on any movie to save it here.</span></div>
+                </div>
             </div>
         </div>
     </div>
@@ -335,6 +393,7 @@
             <span id="viewerAuthor"></span>
         </div>
         <div class="viewer-controls">
+            <button id="viewerFavBtn" class="ctrl-btn fav-ctrl-btn" onclick="if(currentGame) toggleGameFav(currentGame, event)">♥ Favorite</button>
             <button onclick="fullscreenGame()" class="ctrl-btn">⛶ Fullscreen</button>
             <button onclick="newTabGame()" class="ctrl-btn">↗ New Tab</button>
             <button onclick="closeGame()" class="ctrl-btn close-btn">✕ Close</button>
@@ -355,6 +414,7 @@
             <select id="episodeSelect" class="episode-select" onchange="loadEpisode()"></select>
         </div>
         <div class="viewer-controls">
+            <button id="movieViewerFavBtn" class="ctrl-btn fav-ctrl-btn" onclick="if(window._currentMovieItem) toggleMovieFav(window._currentMovieItem, event)">♥ Favorite</button>
             <button onclick="fullscreenMovie()" class="ctrl-btn">⛶ Fullscreen</button>
             <button onclick="closeMovie()" class="ctrl-btn close-btn">✕ Close</button>
         </div>
@@ -363,6 +423,7 @@
 </div>
 
 <script src="script.js"></script>
+<script src="favorites.js"></script>
 <script src="movies.js"></script>
 <script src="settings.js"></script>
 </body>

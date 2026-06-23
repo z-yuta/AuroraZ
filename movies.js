@@ -1,5 +1,60 @@
-const IMG_BASE = 'https://image.tmdb.org/t/p/w342';
-const VIDLINK  = 'https://vidlink.pro';
+const IMG_BASE  = 'https://image.tmdb.org/t/p/w342';
+const VIDLINK   = 'https://vidlink.pro';
+const TMDB_BASE = 'https://api.themoviedb.org/3';
+
+function tmdbUrl(path, params = {}) {
+    const cfg = window.AURORA_CONFIG || {};
+    if (cfg.staticMode && cfg.tmdbKey) {
+        const u = new URL(TMDB_BASE + path);
+        u.searchParams.set('api_key', cfg.tmdbKey);
+        for (const [k, v] of Object.entries(params)) u.searchParams.set(k, v);
+        return u.toString();
+    }
+    const base = path.startsWith('/tv') ? '/api/tv' : '/api/movies';
+    const route = path.replace(/^\/(movie|tv)\//, '').replace(/\/season\/.*/, '');
+    const qs = new URLSearchParams(params).toString();
+    return `${base}${path}${qs ? '?' + qs : ''}`;
+}
+
+function apiUrl(localPath, params = {}) {
+    const cfg = window.AURORA_CONFIG || {};
+    if (cfg.staticMode && cfg.tmdbKey) {
+        const map = {
+            '/api/movies/popular':  '/movie/popular',
+            '/api/movies/trending': '/trending/movie/week',
+            '/api/movies/top':      '/movie/top_rated',
+            '/api/movies/search':   '/search/multi',
+            '/api/tv/popular':      '/tv/popular',
+            '/api/tv/trending':     '/trending/tv/week',
+            '/api/tv/top':          '/tv/top_rated',
+        };
+        const tmdbPath = map[localPath];
+        if (tmdbPath) {
+            const u = new URL(TMDB_BASE + tmdbPath);
+            u.searchParams.set('api_key', cfg.tmdbKey);
+            for (const [k, v] of Object.entries(params)) u.searchParams.set(k, v);
+            return u.toString();
+        }
+    }
+    const qs = new URLSearchParams(params).toString();
+    return localPath + (qs ? '?' + qs : '');
+}
+
+function tvDetailUrl(id) {
+    const cfg = window.AURORA_CONFIG || {};
+    if (cfg.staticMode && cfg.tmdbKey) {
+        return `${TMDB_BASE}/tv/${id}?api_key=${cfg.tmdbKey}`;
+    }
+    return `/api/tv/seasons?id=${id}`;
+}
+
+function tvEpisodeUrl(id, season) {
+    const cfg = window.AURORA_CONFIG || {};
+    if (cfg.staticMode && cfg.tmdbKey) {
+        return `${TMDB_BASE}/tv/${id}/season/${season}?api_key=${cfg.tmdbKey}`;
+    }
+    return `/api/tv/episodes?id=${id}&season=${season}`;
+}
 
 let mediaMode   = 'movies'; // 'movies' | 'tv'
 let mediaFilter = 'popular';
@@ -42,11 +97,11 @@ async function loadMedia(append = false) {
     try {
         let endpoint;
         if (mediaSearch.trim()) {
-            endpoint = `/api/movies/search?q=${encodeURIComponent(mediaSearch)}&page=${mediaPage}`;
+            endpoint = apiUrl('/api/movies/search', { q: mediaSearch, page: mediaPage });
         } else if (mediaMode === 'tv') {
-            endpoint = `/api/tv/${mediaFilter}?page=${mediaPage}`;
+            endpoint = apiUrl(`/api/tv/${mediaFilter}`, { page: mediaPage });
         } else {
-            endpoint = `/api/movies/${mediaFilter}?page=${mediaPage}`;
+            endpoint = apiUrl(`/api/movies/${mediaFilter}`, { page: mediaPage });
         }
 
         const res  = await fetch(endpoint);
@@ -150,7 +205,7 @@ async function openTV(item) {
     document.getElementById('movieViewer').classList.remove('hidden');
 
     try {
-        const res  = await fetch(`/api/tv/seasons?id=${item.id}`);
+        const res  = await fetch(tvDetailUrl(item.id));
         const data = await res.json();
         const seasons = (data.seasons || []).filter(s => s.season_number > 0);
         currentTV = { id: item.id, name: title, seasons };
@@ -171,7 +226,7 @@ async function loadSeason() {
     if (!currentTV) return;
     const season = document.getElementById('seasonSelect').value;
     try {
-        const res  = await fetch(`/api/tv/episodes?id=${currentTV.id}&season=${season}`);
+        const res  = await fetch(tvEpisodeUrl(currentTV.id, season));
         const data = await res.json();
         const eps  = data.episodes || [];
 
@@ -206,7 +261,7 @@ function fullscreenMovie() {
 async function renderHomeTrending() {
     const el = document.getElementById('homeTrendingMovies');
     try {
-        const res  = await fetch('/api/movies/trending');
+        const res  = await fetch(apiUrl('/api/movies/trending'));
         const data = await res.json();
         const items = (data.results || []).filter(i => i.poster_path).slice(0, 14);
         el.innerHTML = '';
